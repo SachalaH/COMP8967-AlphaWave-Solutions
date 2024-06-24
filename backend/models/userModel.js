@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
 const userSchema = mongoose.Schema(
   {
@@ -40,6 +41,23 @@ const userSchema = mongoose.Schema(
     timestamps: true,
   }
 );
+
+// A functionality to save hashed password in the db
+// this works everytime password is changed or a new user is added
+// we are adding a pre method meaning before saving a user as per the model do the following
+
+userSchema.pre("save", async function (next) {
+  // if password is not modified then just let it be we dont need to update it
+  if (!this.isModified("password")) {
+    return next();
+  }
+  // if not then hash the password
+  // logic to hash the password
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(this.password, salt);
+  this.password = hashedPassword;
+  next();
+});
 
 const User = mongoose.model("User", userSchema);
 module.exports = User;

@@ -25,7 +25,7 @@ function SignupPage() {
             <label htmlFor="terms">I agree to all terms, privacy policies, and fees</label>
           </div>
           <button type="submit">Sign up</button>
-          <p className="login-text">Already have an account? <a href="#">Log in</a></p>
+          <p className="login-text">Already have an account? <a href="/login">Log in</a></p>
         </form>
       </div>
     </div>

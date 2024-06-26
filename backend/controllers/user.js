@@ -41,7 +41,7 @@ const registerUser = asyncHandler(async (req, res) => {
     httpOnly: true, // for development
     expires: new Date(Date.now() + 1000 * 86400), // 1 day in miliseconds
     sameSite: "none",
-    secure: true, // for production
+    // secure: true, // for production
   });
 
   if (user) {
@@ -93,7 +93,7 @@ const loginUser = asyncHandler(async (req, res) => {
       httpOnly: true,
       expires: new Date(Date.now() + 1000 * 86400), // 1 day
       sameSite: "none",
-      secure: true,
+      // secure: true,
     });
 
     const { _id, name, email, photo, phone, bio } = user;
@@ -119,9 +119,67 @@ const logoutUser = asyncHandler(async (req, res) => {
     httpOnly: true,
     expires: new Date(0),
     sameSite: "none",
-    secure: true,
+    // secure: true,
   });
   return res.status(200).json({ message: "Successfully Logged Out" });
+});
+
+// function to get the user info of authorized user
+const getUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  if (user) {
+    const { _id, name, email, photo, phone, bio } = user;
+    res.status(200).json({
+      _id,
+      name,
+      email,
+      photo,
+      phone,
+      bio,
+    });
+  } else {
+    res.status(400);
+    throw new Error("User Not Found");
+  }
+});
+
+// function to get the logged in status of a user
+const loginStatus = asyncHandler(async (req, res) => {
+  const token = req.cookies.token;
+  if (!token) {
+    return res.json(false);
+  }
+  // Verify Token
+  const verified = jwt.verify(token, process.env.JWT_SECRET);
+  if (verified) {
+    return res.json(true);
+  }
+  return res.json(false);
+});
+
+const updateUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  if (user) {
+    const { name, photo, phone, bio } = user;
+    user.name = req.body.name || name;
+    user.phone = req.body.phone || phone;
+    user.bio = req.body.bio || bio;
+    user.photo = req.body.photo || photo;
+
+    const updatedUser = await user.save();
+    res.status(200).json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      photo: updatedUser.photo,
+      phone: updatedUser.phone,
+      bio: updatedUser.bio,
+    });
+  } else {
+    res.status(404);
+    throw new Error("User not found");
+  }
 });
 
 // Function to generate JWT
@@ -129,4 +187,11 @@ const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1d" });
 };
 
-module.exports = { registerUser, loginUser, logoutUser };
+module.exports = {
+  registerUser,
+  loginUser,
+  logoutUser,
+  getUser,
+  loginStatus,
+  updateUser,
+};

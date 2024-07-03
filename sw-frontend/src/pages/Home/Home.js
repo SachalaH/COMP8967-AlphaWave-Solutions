@@ -4,6 +4,7 @@ import {Link} from "react-router-dom";
 import "./Home.scss";
 import heroImg from "../../assets/inv-img.png";
 
+
 const Home = () => {
   return (
     <div className='home'>
@@ -12,19 +13,25 @@ const Home = () => {
                 <FaProductHunt size={35}/>
             </div>
             <ul className='home-links'>
+            {/* <ShowOnLogout> */}
                 <li>
                     <Link to="/register">Register</Link>
                 </li>
+            {/* </ShowOnLogout> */}
+            {/* <ShowOnLogout> */}
                 <li>
                     <button className='--btn --btn-primary'>
                     <Link to="/login">Login</Link>
                     </button>
                 </li>
+            {/* </ShowOnLogout> */}
+            {/* <ShowOnLogin> */}
                 <li>
                     <button className='--btn --btn-primary'>
                     <Link to="/dashboard">Dashboard</Link>
                     </button>
                 </li>
+            {/* </ShowOnLogin> */}
             </ul>
         </nav>
         <section className="container hero">

@@ -1,9 +1,8 @@
-
 import { createSlice } from "@reduxjs/toolkit";
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
+// Existing code
 const name = JSON.parse(localStorage.getItem("name"));
 
 const initialState = {
@@ -47,3 +46,35 @@ export const selectName = (state) => state.auth.name;
 export const selectUser = (state) => state.auth.user;
 
 export default authSlice.reducer;
+
+// New functions
+export const validateEmail = (email) => {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(String(email).toLowerCase());
+};
+
+export const loginUser = async (userData) => {
+  try {
+    const response = await axios.post('/api/auth/login', userData);
+    if (response.data) {
+      toast.success('Login Successful');
+      return response.data;
+    }
+  } catch (error) {
+    toast.error('Login Failed');
+    throw error;
+  }
+};
+
+export const registerUser = async (userData) => {
+  try {
+    const response = await axios.post('/api/auth/register', userData);
+    if (response.data) {
+      toast.success('Registration Successful');
+      return response.data;
+    }
+  } catch (error) {
+    toast.error('Registration Failed');
+    throw error;
+  }
+};

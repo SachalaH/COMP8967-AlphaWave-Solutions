@@ -1,10 +1,14 @@
-
 import { createSlice } from "@reduxjs/toolkit";
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const name = JSON.parse(localStorage.getItem("name"));
+let name;
+try {
+  name = JSON.parse(localStorage.getItem("name"));
+} catch (error) {
+  name = null;
+}
 
 const initialState = {
   isLoggedIn: false,

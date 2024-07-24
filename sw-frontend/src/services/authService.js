@@ -1,80 +1,157 @@
-import { createSlice } from "@reduxjs/toolkit";
-import axios from 'axios';
-import { toast } from 'react-toastify';
+import axios from "axios";
+import { toast } from "react-toastify";
 
-// Existing code
-const name = JSON.parse(localStorage.getItem("name"));
+export const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
-const initialState = {
-  isLoggedIn: false,
-  name: name ? name : "",
-  user: {
-    name: "",
-    email: "",
-    phone: "",
-    bio: "",
-    photo: "",
-  },
-};
-
-const authSlice = createSlice({
-  name: "auth",
-  initialState,
-  reducers: {
-    SET_LOGIN(state, action) {
-      state.isLoggedIn = action.payload;
-    },
-    SET_NAME(state, action) {
-      localStorage.setItem("name", JSON.stringify(action.payload));
-      state.name = action.payload;
-    },
-    SET_USER(state, action) {
-      const profile = action.payload;
-      state.user.name = profile.name;
-      state.user.email = profile.email;
-      state.user.phone = profile.phone;
-      state.user.bio = profile.bio;
-      state.user.photo = profile.photo;
-    },
-  },
-});
-
-export const { SET_LOGIN, SET_NAME, SET_USER } = authSlice.actions;
-
-export const selectIsLoggedIn = (state) => state.auth.isLoggedIn;
-export const selectName = (state) => state.auth.name;
-export const selectUser = (state) => state.auth.user;
-
-export default authSlice.reducer;
-
-// New functions
 export const validateEmail = (email) => {
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return re.test(String(email).toLowerCase());
+  return email.match(
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+  );
 };
 
-export const loginUser = async (userData) => {
-  try {
-    const response = await axios.post('/api/auth/login', userData);
-    if (response.data) {
-      toast.success('Login Successful');
-      return response.data;
-    }
-  } catch (error) {
-    toast.error('Login Failed');
-    throw error;
-  }
-};
-
+// Register User
 export const registerUser = async (userData) => {
   try {
-    const response = await axios.post('/api/auth/register', userData);
-    if (response.data) {
-      toast.success('Registration Successful');
-      return response.data;
+    const response = await axios.post(
+      'http://localhost:5000/api/user/register',
+      userData,
+      { withCredentials: true }
+    );
+    if (response.statusText === "OK") {
+      toast.success("User Registered successfully");
     }
+    return response.data;
   } catch (error) {
-    toast.error('Registration Failed');
-    throw error;
+    const message =
+      (error.response && error.response.data && error.response.data.message) ||
+      error.message ||
+      error.toString();
+    toast.error(message);
   }
+};
+
+// Login User
+export const loginUser = async (userData) => {
+  try {
+    const response = await axios.post(
+      'http://localhost:5000/api/user/login',
+      userData
+    );
+    if (response.statusText === "OK") {
+      toast.success("Login Successful...");
+    }
+    return response.data;
+  } catch (error) {
+    const message =
+      (error.response && error.response.data && error.response.data.message) ||
+      error.message ||
+      error.toString();
+    toast.error(message);
+  }
+};
+
+// Logout User
+export const logoutUser = async () => {
+  try {
+    await axios.get('${BACKEND_URL}/api/user/logout');
+  } catch (error) {
+    const message =
+      (error.response && error.response.data && error.response.data.message) ||
+      error.message ||
+      error.toString();
+    toast.error(message);
+  }
+};
+
+// Forgot Password
+export const forgotPassword = async (userData) => {
+  try {
+    const response = await axios.post(
+      '${BACKEND_URL}/api/user/forgotpassword',
+      userData
+    );
+    toast.success(response.data.message);
+  } catch (error) {
+    const message =
+      (error.response && error.response.data && error.response.data.message) ||
+      error.message ||
+      error.toString();
+    toast.error(message);
+  }
+};
+
+// Reset Password
+export const resetPassword = async (userData, resetToken) => {
+  try {
+    const response = await axios.put(
+      '${BACKEND_URL}/api/user/resetpassword/${resetToken}',
+      userData
+    );
+    return response.data;
+  } catch (error) {
+    const message =
+      (error.response && error.response.data && error.response.data.message) ||
+      error.message ||
+      error.toString();
+    toast.error(message);
+  }
+};
+
+// Get Login Status
+export const getLoginStatus = async () => {
+  try {
+    const response = await axios.get('${BACKEND_URL}/api/user/loggedin');
+    return response.data;
+  } catch (error) {
+    const message =
+      (error.response && error.response.data && error.response.data.message) ||
+      error.message ||
+      error.toString();
+    toast.error(message);
+  }
+};
+// Get User Profile
+export const getUser = async () => {
+  try {
+    const response = await axios.get('${BACKEND_URL}/api/user/getuser');
+    return response.data;
+  } catch (error) {
+    const message =
+      (error.response && error.response.data && error.response.data.message) ||
+      error.message ||
+      error.toString();
+    toast.error(message);
+  }
+};
+// Update Profile
+export const updateUser = async (formData) => {
+  try {
+    const response = await axios.patch(
+      '${BACKEND_URL}/api/user/updateuser',
+      formData
+    );
+    return response.data;
+  } catch (error) {
+    const message =
+      (error.response && error.response.data && error.response.data.message) ||
+      error.message ||
+      error.toString();
+    toast.error(message);
+  }
+};
+// Update Profile
+export const changePassword = async (formData) => {
+  try {
+    const response = await axios.patch(
+      '${BACKEND_URL}/api/user/changepassword',
+      formData
+    );
+    return response.data;
+  } catch (error) {
+    const message =
+      (error.response && error.response.data && error.response.data.message) ||
+      error.message ||
+      error.toString();
+    toast.error(message);
+  }
 };

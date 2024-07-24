@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const asyncHandler = require("express-async-handler");
 const Token = require("../models/tokenModel");
 const crypto = require("crypto");
+const sendEmail = require("../utils/sendEmail");
 
 // logic of user registration
 const registerUser = asyncHandler(async (req, res) => {
@@ -246,7 +247,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
   // Construct Reset Url
   const resetUrl = `${process.env.FRONTEND_URL}/resetpassword/${resetToken}`;
-
+  console.log("Reset url", resetUrl);
   // Reset Email
   const message = `
       <h2>Hello ${user.name}</h2>
@@ -263,7 +264,8 @@ const forgotPassword = asyncHandler(async (req, res) => {
   const sent_from = process.env.EMAIL_USER;
 
   try {
-    await sendEmail(subject, message, send_to, sent_from);
+    console.log("trying to send an email");
+    await sendEmail(subject, message, send_to, sent_from, sent_from);
     res.status(200).json({ success: true, message: "Reset Email Sent" });
   } catch (error) {
     res.status(500);

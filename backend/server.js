@@ -10,6 +10,7 @@ const productRouter = require("./routes/productRoutes");
 const errorHandler = require("./middlewares/error");
 const cookieParser = require("cookie-parser");
 const path = require("path");
+const contactRouter = require("./routes/contactRoute");
 
 const PORT = process.env.PORT || 5000;
 
@@ -29,6 +30,7 @@ app.get("/", (req, res) => {
 // user route
 app.use("/api/user", userRouter);
 app.use("/api/product", productRouter);
+app.use("/api/contact", contactRouter);
 
 app.use(errorHandler);
 // connect to the database

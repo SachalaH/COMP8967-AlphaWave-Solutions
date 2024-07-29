@@ -53,7 +53,7 @@ export const loginUser = async (userData) => {
 // Logout User
 export const logoutUser = async () => {
   try {
-    await axios.get('${BACKEND_URL}/api/user/logout');
+    await axios.get('http://localhost:5000/api/user/logout');
   } catch (error) {
     const message =
       (error.response && error.response.data && error.response.data.message) ||
@@ -67,7 +67,7 @@ export const logoutUser = async () => {
 export const forgotPassword = async (userData) => {
   try {
     const response = await axios.post(
-      '${BACKEND_URL}/api/user/forgotpassword',
+      'http://localhost:5000/api/user/forgotpassword',
       userData
     );
     toast.success(response.data.message);
@@ -84,7 +84,7 @@ export const forgotPassword = async (userData) => {
 export const resetPassword = async (userData, resetToken) => {
   try {
     const response = await axios.put(
-      '${BACKEND_URL}/api/user/resetpassword/${resetToken}',
+      'http://localhost:5000/api/user/resetpassword/${resetToken}',
       userData
     );
     return response.data;
@@ -100,7 +100,7 @@ export const resetPassword = async (userData, resetToken) => {
 // Get Login Status
 export const getLoginStatus = async () => {
   try {
-    const response = await axios.get('${BACKEND_URL}/api/user/loggedin');
+    const response = await axios.get('http://localhost:5000/api/user/loginstatus');
     return response.data;
   } catch (error) {
     const message =
@@ -113,7 +113,7 @@ export const getLoginStatus = async () => {
 // Get User Profile
 export const getUser = async () => {
   try {
-    const response = await axios.get('${BACKEND_URL}/api/user/getuser');
+    const response = await axios.get('http://localhost:5000/api/user/getuser');
     return response.data;
   } catch (error) {
     const message =
@@ -127,7 +127,7 @@ export const getUser = async () => {
 export const updateUser = async (formData) => {
   try {
     const response = await axios.patch(
-      '${BACKEND_URL}/api/user/updateuser',
+      'http://localhost:5000/api/user/updateuser',
       formData
     );
     return response.data;
@@ -143,7 +143,7 @@ export const updateUser = async (formData) => {
 export const changePassword = async (formData) => {
   try {
     const response = await axios.patch(
-      '${BACKEND_URL}/api/user/changepassword',
+      'http://localhost:5000/api/user/changepassword',
       formData
     );
     return response.data;

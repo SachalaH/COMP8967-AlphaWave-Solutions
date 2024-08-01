@@ -8,6 +8,7 @@ import Reset from "./pages/auth/Reset";
 import Dashboard from "./pages/dashboard/Dashboard";
 import Sidebar from './components/sidebar/Sidebar';
 import Layout from './components/layout/Layout';
+import Uploadimage from "./pages/upload/Uploadimage";
 import "react-toastify/dist/ReactToastify.css";
 
 // import axios from "axios";
@@ -31,6 +32,7 @@ function App() {
       <Route path="/login" element={<Login/>}/>
       <Route path="/register" element={<Register/>}/>
       <Route path="/forgot" element={<Forgot/>}/>
+      <Route path="/upload" element={<Uploadimage/>} />
       <Route path="/resetpassword/:resetToken" element={<Reset/>}/>
       <Route path="/dashboard" element={
         <Sidebar>

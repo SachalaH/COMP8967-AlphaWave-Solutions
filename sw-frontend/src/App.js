@@ -10,6 +10,7 @@ import Sidebar from "./components/sidebar/Sidebar";
 import Layout from "./components/layout/Layout";
 import axios from "axios";
 import { ToastContainer } from "react-toastify";
+import Uploadimage from "./pages/upload/Uploadimage";
 import "react-toastify/dist/ReactToastify.css";
 import { useDispatch } from "react-redux";
 import { getLoginStatus } from "./services/authService";
@@ -43,7 +44,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot" element={<Forgot />} />
         <Route path="/resetpassword/:resetToken" element={<Reset />} />
-
+        <Route path="/upload" element={<Uploadimage/>} />
         <Route
           path="/dashboard"
           element={
@@ -116,6 +117,7 @@ function App() {
         />
       </Routes>
     </BrowserRouter>
+
   );
 }
 

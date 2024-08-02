@@ -124,9 +124,47 @@ def detect(save_img=False):
                         with open(txt_path + '.txt', 'a') as f:
                             f.write(('%g ' * len(line)).rstrip() % line + '\n')
 
+                    # if save_img or view_img:  # Add bbox to image
+                    #     # label = f'{names[int(cls)]} {conf:.2f}'
+                    #     label='Empty'
+                    #     color=(0, 255, 0)
+                    #     # plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=20)
+                    #     plot_one_box(xyxy, im0, label=label, colo   r=color, line_thickness=20)
+
+
+
                     if save_img or view_img:  # Add bbox to image
-                        label = f'{names[int(cls)]} {conf:.2f}'
-                        plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=1)
+                        label = 'Empty'
+                        color = (0, 255, 0)  # Bounding box color
+                        background_color = (0, 255, 255)  # Blue background color
+                        line_thickness = 15
+                        font_scale = 2  # Adjust this as needed
+                        font_thickness = 2  # Adjust this as needed
+                        text_color = (0, 51, 51)  # Green text color
+
+                        
+                        # Draw the bounding box
+                        x1, y1, x2, y2 = map(int, xyxy)
+                        cv2.rectangle(im0, (x1, y1), (x2, y2), color, line_thickness)
+                        
+                        # Draw the label background
+                        if label:
+                            text_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)[0]
+                            text_width, text_height = text_size
+                            background_top_left = (x1, y1 - text_height - 10)
+                            background_bottom_right = (x1 + text_width, y1)
+                            # Ensure the rectangle stays within the image boundaries
+                            background_top_left = (max(0, background_top_left[0]), max(0, background_top_left[1]))
+                            background_bottom_right = (min(im0.shape[1], background_bottom_right[0]), min(im0.shape[0], background_bottom_right[1]))
+                            cv2.rectangle(im0, background_top_left, background_bottom_right, background_color, thickness=cv2.FILLED)
+                            
+                            # Draw the label text
+                            text_x = x1
+                            text_y = y1 - 10 if y1 - 10 > 10 else y1 + text_size[1] + 10
+                            cv2.putText(im0, label, (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_color, font_thickness)
+
+
+
 
             # Print time (inference + NMS)
             print(f'{s}Done. ({(1E3 * (t2 - t1)):.1f}ms) Inference, ({(1E3 * (t3 - t2)):.1f}ms) NMS')

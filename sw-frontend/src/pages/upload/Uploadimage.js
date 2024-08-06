@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import styles from "./uploadimage.module.scss";
+import Card from "../../components/card/Card";
 
 const Uploadimage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -22,7 +24,7 @@ const Uploadimage = () => {
     formData.append('image', selectedFile);
 
     try {
-      const response = await axios.post('/api/upload', formData, {
+      await axios.post('/api/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -34,12 +36,16 @@ const Uploadimage = () => {
   };
 
   return (
-    <div className="upload-container">
-      <h2>Upload an Image</h2>
-      <form onSubmit={handleUpload}>
-        <input type="file" onChange={handleFileChange} />
-        <button type="submit">Upload</button>
-      </form>
+    <div className={`container ${styles.upload}`}>
+      <Card>
+        <div className={styles.form}>
+          <h2>Upload an Image</h2>
+          <form onSubmit={handleUpload}>
+            <input type="file" onChange={handleFileChange} />
+            <button type="submit" className={styles.uploadButton}>Upload</button>
+          </form>
+        </div>
+      </Card>
     </div>
   );
 };

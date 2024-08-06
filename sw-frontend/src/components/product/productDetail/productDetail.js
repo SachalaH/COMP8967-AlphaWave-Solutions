@@ -6,9 +6,8 @@ import { selectIsLoggedIn } from "../../../redux/features/auth/authSlice";
 import { getProduct } from "../../../redux/features/product/productSlice";
 import Card from "../../card/Card";
 import { SpinnerImg } from "../../loader/Loader";
-import "./ProductDetail.scss";
-import DOMPurify from 'dompurify';
-
+import "./productDetail.scss";
+import DOMPurify from "dompurify";
 
 const ProductDetail = () => {
   useRedirectLoggedOutUser("/login");

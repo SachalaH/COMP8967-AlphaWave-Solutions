@@ -1,33 +1,38 @@
+const asyncHandler = require("express-async-handler");
 const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const asyncHandler = require("express-async-handler");
 const Token = require("../models/tokenModel");
 const crypto = require("crypto");
 const sendEmail = require("../utils/sendEmail");
 
-// logic of user registration
+// Generate Token
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+};
+
+// Register User
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
 
-  // Validation on server side just in case if client bypass the frontend validation
+  // Validation
   if (!name || !email || !password) {
     res.status(400);
-    throw new Error("Please enter all the required fields");
+    throw new Error("Please fill in all required fields");
   }
   if (password.length < 6) {
     res.status(400);
-    throw new Error("Password must be at least 6 characters");
+    throw new Error("Password must be up to 6 characters");
   }
 
-  // Check if user email already exists and prompt to sign in
+  // Check if user email already exists
   const userExists = await User.findOne({ email });
 
   if (userExists) {
     res.status(400);
-    throw new Error("Email exists please sign in");
+    throw new Error("Email has already been registered");
   }
-  // if not then create the user
+
   // Create new user
   const user = await User.create({
     name,
@@ -35,20 +40,19 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
   });
 
-  // Generate JWT and send it as a cookie
+  //   Generate Token
   const token = generateToken(user._id);
 
-  // Send HTTP-only cookie to the client
+  // Send HTTP-only cookie
   res.cookie("token", token, {
     path: "/",
-    httpOnly: true, // for development
-    expires: new Date(Date.now() + 1000 * 86400), // 1 day in miliseconds
+    httpOnly: true,
+    expires: new Date(Date.now() + 1000 * 86400), // 1 day
     sameSite: "none",
-    // secure: true, // for production
+    secure: true,
   });
 
   if (user) {
-    // send back the user data
     const { _id, name, email, photo, phone, bio } = user;
     res.status(201).json({
       _id,
@@ -65,14 +69,14 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-// logic of user login
+// Login User
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  // Validate Request on server side
+  // Validate Request
   if (!email || !password) {
     res.status(400);
-    throw new Error("Please enter both email and password");
+    throw new Error("Please add email and password");
   }
 
   // Check if user exists
@@ -80,25 +84,26 @@ const loginUser = asyncHandler(async (req, res) => {
 
   if (!user) {
     res.status(400);
-    throw new Error("User not found, please register");
+    throw new Error("User not found, please signup");
   }
 
   // User exists, check if password is correct
   const passwordIsCorrect = await bcrypt.compare(password, user.password);
 
-  if (user && passwordIsCorrect) {
-    // if password is correct then generate the token
-    const token = generateToken(user._id);
+  //   Generate Token
+  const token = generateToken(user._id);
 
-    // Send HTTP-only cookie to user
+  if (passwordIsCorrect) {
+    // Send HTTP-only cookie
     res.cookie("token", token, {
       path: "/",
       httpOnly: true,
       expires: new Date(Date.now() + 1000 * 86400), // 1 day
       sameSite: "none",
-      secure: false,
+      secure: true,
     });
-
+  }
+  if (user && passwordIsCorrect) {
     const { _id, name, email, photo, phone, bio } = user;
     res.status(200).json({
       _id,
@@ -116,18 +121,18 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 // Logout User
-const logoutUser = asyncHandler(async (req, res) => {
+const logout = asyncHandler(async (req, res) => {
   res.cookie("token", "", {
     path: "/",
     httpOnly: true,
     expires: new Date(0),
     sameSite: "none",
-    // secure: true,
+    secure: true,
   });
   return res.status(200).json({ message: "Successfully Logged Out" });
 });
 
-// function to get the user info of authorized user
+// Get User Data
 const getUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
 
@@ -147,9 +152,8 @@ const getUser = asyncHandler(async (req, res) => {
   }
 });
 
-// function to get the logged in status of a user
+// Get Login Status
 const loginStatus = asyncHandler(async (req, res) => {
-  console.log("COOKIES:::", req.cookies.token);
   const token = req.cookies.token;
   if (!token) {
     return res.json(false);
@@ -162,11 +166,13 @@ const loginStatus = asyncHandler(async (req, res) => {
   return res.json(false);
 });
 
+// Update User
 const updateUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
 
   if (user) {
-    const { name, photo, phone, bio } = user;
+    const { name, email, photo, phone, bio } = user;
+    user.email = email;
     user.name = req.body.name || name;
     user.phone = req.body.phone || phone;
     user.bio = req.body.bio || bio;
@@ -176,6 +182,7 @@ const updateUser = asyncHandler(async (req, res) => {
     res.status(200).json({
       _id: updatedUser._id,
       name: updatedUser.name,
+      email: updatedUser.email,
       photo: updatedUser.photo,
       phone: updatedUser.phone,
       bio: updatedUser.bio,
@@ -186,22 +193,22 @@ const updateUser = asyncHandler(async (req, res) => {
   }
 });
 
-const updatePassword = asyncHandler(async (req, res) => {
+const changePassword = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
-  const { old_password, password } = req.body;
+  const { oldPassword, password } = req.body;
 
   if (!user) {
     res.status(400);
     throw new Error("User not found, please signup");
   }
   //Validate
-  if (!old_password || !password) {
+  if (!oldPassword || !password) {
     res.status(400);
     throw new Error("Please add old and new password");
   }
 
   // check if old password matches password in DB
-  const passwordIsCorrect = await bcrypt.compare(old_password, user.password);
+  const passwordIsCorrect = await bcrypt.compare(oldPassword, user.password);
 
   // Save new password
   if (user && passwordIsCorrect) {
@@ -232,6 +239,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
   // Create Reste Token
   let resetToken = crypto.randomBytes(32).toString("hex") + user._id;
   console.log(resetToken);
+
   // Hash token before saving to DB
   const hashedToken = crypto
     .createHash("sha256")
@@ -248,25 +256,24 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
   // Construct Reset Url
   const resetUrl = `${process.env.FRONTEND_URL}/resetpassword/${resetToken}`;
-  console.log("Reset url", resetUrl);
+
   // Reset Email
   const message = `
       <h2>Hello ${user.name}</h2>
-      <p>Please use the URL below to reset your password</p>  
+      <p>Please use the url below to reset your password</p>  
       <p>This reset link is valid for only 30 minutes.</p>
 
       <a href=${resetUrl} clicktracking=off>${resetUrl}</a>
 
-      <p>Regards,</p>
-      <p>Alphawave Admin</p>
+      <p>Regards...</p>
+      <p>Alphawave Team</p>
     `;
   const subject = "Password Reset Request";
   const send_to = user.email;
   const sent_from = process.env.EMAIL_USER;
 
   try {
-    console.log("trying to send an email");
-    await sendEmail(subject, message, send_to, sent_from, sent_from);
+    await sendEmail(subject, message, send_to, sent_from);
     res.status(200).json({ success: true, message: "Reset Email Sent" });
   } catch (error) {
     res.status(500);
@@ -274,12 +281,16 @@ const forgotPassword = asyncHandler(async (req, res) => {
   }
 });
 
+// Reset Password
 const resetPassword = asyncHandler(async (req, res) => {
   const { password } = req.body;
-  const { token } = req.params;
+  const { resetToken } = req.params;
 
   // Hash token, then compare to Token in DB
-  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
 
   // fIND tOKEN in DB
   const userToken = await Token.findOne({
@@ -296,24 +307,22 @@ const resetPassword = asyncHandler(async (req, res) => {
   const user = await User.findOne({ _id: userToken.userId });
   user.password = password;
   await user.save();
+  // delete the token so that one cannot reset it again
+  const tokenId = userToken._id;
+  await Token.findByIdAndDelete(tokenId);
   res.status(200).json({
     message: "Password Reset Successful, Please Login",
   });
 });
 
-// Function to generate JWT
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1d" });
-};
-
 module.exports = {
   registerUser,
   loginUser,
-  logoutUser,
+  logout,
   getUser,
   loginStatus,
   updateUser,
-  updatePassword,
+  changePassword,
   forgotPassword,
   resetPassword,
 };

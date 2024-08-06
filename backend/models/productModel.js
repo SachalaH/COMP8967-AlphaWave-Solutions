@@ -15,7 +15,7 @@ const productSchema = mongoose.Schema(
     sku: {
       type: String,
       required: true,
-      default: "sku-00",
+      default: "SKU",
       trim: true,
     },
     category: {
@@ -23,25 +23,19 @@ const productSchema = mongoose.Schema(
       required: [true, "Please add a category"],
       trim: true,
     },
-    backroom_quantity: {
-      type: Number,
-      required: [true, "Please add backroom quantity"],
-      trim: true,
-    },
-    shelf_quantity: {
-      type: Number,
-      required: [true, "Please add shelf quantity"],
+    quantity: {
+      type: String,
+      required: [true, "Please add a quantity"],
       trim: true,
     },
     price: {
-      type: Number,
+      type: String,
       required: [true, "Please add a price"],
       trim: true,
     },
     description: {
       type: String,
       required: [true, "Please add a description"],
-      default: "Product Description",
       trim: true,
     },
     image: {
